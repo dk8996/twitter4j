@@ -90,6 +90,12 @@ public final class ConfigurationBuilder {
         return this;
     }
 
+    public ConfigurationBuilder setHttpProxySocks(boolean httpProxySocks) {
+        checkNotBuilt();
+        configurationBean.setHttpProxySocks(httpProxySocks);
+        return this;
+    }
+    
     public ConfigurationBuilder setHttpConnectionTimeout(int httpConnectionTimeout) {
         checkNotBuilt();
         configurationBean.setHttpConnectionTimeout(httpConnectionTimeout);
@@ -201,6 +207,12 @@ public final class ConfigurationBuilder {
     public ConfigurationBuilder setRestBaseURL(String restBaseURL) {
         checkNotBuilt();
         configurationBean.setRestBaseURL(restBaseURL);
+        return this;
+    }
+
+    public ConfigurationBuilder setUploadBaseURL(String uploadBaseURL) {
+        checkNotBuilt();
+        configurationBean.setUploadBaseURL(uploadBaseURL);
         return this;
     }
 

@@ -39,6 +39,8 @@ public final class StatusUpdate implements java.io.Serializable {
     private transient InputStream mediaBody;
     private File mediaFile;
     private long[] mediaIds;
+    private boolean autoPopulateReplyMetadata;
+    private String attachmentUrl = null;
 
     public StatusUpdate(String status) {
         this.status = status;
@@ -136,6 +138,32 @@ public final class StatusUpdate implements java.io.Serializable {
         this.mediaIds = mediaIds;
     }
 
+    /**
+     * @since Twitter4J 4.0.7
+     * @return attachment url
+     */
+    public String getAttachmentUrl() {
+        return attachmentUrl;
+    }
+
+    /**
+     * @param attachmentUrl attachment url
+     * @since Twitter4J 4.0.7
+     */
+    public void setAttachmentUrl(String attachmentUrl) {
+        this.attachmentUrl = attachmentUrl;
+    }
+
+    /**
+     * @param attachmentUrl attachment url
+     * @return status update
+     * @since Twitter4J 4.0.7
+     */
+    public StatusUpdate attachmentUrl(String attachmentUrl) {
+        setAttachmentUrl(attachmentUrl);
+        return this;
+    }
+
     /*package*/ boolean isForUpdateWithMedia() {
         return mediaFile != null || mediaName != null;
     }
@@ -177,6 +205,35 @@ public final class StatusUpdate implements java.io.Serializable {
         return possiblySensitive;
     }
 
+    /**
+     *
+     * @return autoPopulateReplyMetadata
+     * @since Twitter4J 4.0.7
+     */
+    public boolean isAutoPopulateReplyMetadata() {
+        return autoPopulateReplyMetadata;
+    }
+
+    /**
+     *
+     * @param autoPopulateReplyMetadata auto reply meta data
+     * @since Twitter4J 4.0.7
+     */
+    public void setAutoPopulateReplyMetadata(boolean autoPopulateReplyMetadata) {
+        this.autoPopulateReplyMetadata = autoPopulateReplyMetadata;
+    }
+
+    /**
+     *
+     * @param autoPopulateReplyMetadata auto reply meta data
+     * @return this instance
+     * @since Twitter4J 4.0.7
+     */
+    public StatusUpdate autoPopulateReplyMetadata(boolean autoPopulateReplyMetadata) {
+        setAutoPopulateReplyMetadata(autoPopulateReplyMetadata);
+        return this;
+    }
+
     /*package*/ HttpParameter[] asHttpParameterArray() {
         ArrayList<HttpParameter> params = new ArrayList<HttpParameter>();
         appendParameter("status", status, params);
@@ -201,6 +258,10 @@ public final class StatusUpdate implements java.io.Serializable {
         } else if (mediaIds != null && mediaIds.length >= 1) {
             params.add(new HttpParameter("media_ids", StringUtil.join(mediaIds)));
         }
+        if(autoPopulateReplyMetadata){
+            appendParameter("auto_populate_reply_metadata", "true", params);
+        }
+        appendParameter("attachment_url", attachmentUrl, params);
         HttpParameter[] paramArray = new HttpParameter[params.size()];
         return params.toArray(paramArray);
     }
@@ -226,18 +287,18 @@ public final class StatusUpdate implements java.io.Serializable {
 
         StatusUpdate that = (StatusUpdate) o;
 
-        if (displayCoordinates != that.displayCoordinates) return false;
         if (inReplyToStatusId != that.inReplyToStatusId) return false;
+        if (displayCoordinates != that.displayCoordinates) return false;
         if (possiblySensitive != that.possiblySensitive) return false;
+        if (autoPopulateReplyMetadata != that.autoPopulateReplyMetadata) return false;
+        if (status != null ? !status.equals(that.status) : that.status != null) return false;
         if (location != null ? !location.equals(that.location) : that.location != null) return false;
+        if (placeId != null ? !placeId.equals(that.placeId) : that.placeId != null) return false;
+        if (mediaName != null ? !mediaName.equals(that.mediaName) : that.mediaName != null) return false;
         if (mediaBody != null ? !mediaBody.equals(that.mediaBody) : that.mediaBody != null) return false;
         if (mediaFile != null ? !mediaFile.equals(that.mediaFile) : that.mediaFile != null) return false;
-        if (mediaName != null ? !mediaName.equals(that.mediaName) : that.mediaName != null) return false;
-        if (mediaIds != null ? !Arrays.equals(mediaIds, that.mediaIds) : that.mediaIds != null) return false;
-        if (placeId != null ? !placeId.equals(that.placeId) : that.placeId != null) return false;
-        if (status != null ? !status.equals(that.status) : that.status != null) return false;
-
-        return true;
+        if (!Arrays.equals(mediaIds, that.mediaIds)) return false;
+        return attachmentUrl != null ? attachmentUrl.equals(that.attachmentUrl) : that.attachmentUrl == null;
     }
 
     @Override
@@ -251,23 +312,27 @@ public final class StatusUpdate implements java.io.Serializable {
         result = 31 * result + (mediaName != null ? mediaName.hashCode() : 0);
         result = 31 * result + (mediaBody != null ? mediaBody.hashCode() : 0);
         result = 31 * result + (mediaFile != null ? mediaFile.hashCode() : 0);
-        result = 31 * result + (mediaIds != null ? StringUtil.join(mediaIds).hashCode() : 0);
+        result = 31 * result + Arrays.hashCode(mediaIds);
+        result = 31 * result + (autoPopulateReplyMetadata ? 1 : 0);
+        result = 31 * result + (attachmentUrl != null ? attachmentUrl.hashCode() : 0);
         return result;
     }
 
     @Override
     public String toString() {
         return "StatusUpdate{" +
-            "status='" + status + '\'' +
-            ", inReplyToStatusId=" + inReplyToStatusId +
-            ", location=" + location +
-            ", placeId='" + placeId + '\'' +
-            ", displayCoordinates=" + displayCoordinates +
-            ", possiblySensitive=" + possiblySensitive +
-            ", mediaName='" + mediaName + '\'' +
-            ", mediaBody=" + mediaBody +
-            ", mediaFile=" + mediaFile +
-            ", mediaIds=" + mediaIds +
-            '}';
+                "status='" + status + '\'' +
+                ", inReplyToStatusId=" + inReplyToStatusId +
+                ", location=" + location +
+                ", placeId='" + placeId + '\'' +
+                ", displayCoordinates=" + displayCoordinates +
+                ", possiblySensitive=" + possiblySensitive +
+                ", mediaName='" + mediaName + '\'' +
+                ", mediaBody=" + mediaBody +
+                ", mediaFile=" + mediaFile +
+                ", mediaIds=" + Arrays.toString(mediaIds) +
+                ", autoPopulateReplyMetadata=" + autoPopulateReplyMetadata +
+                ", attachmentUrl='" + attachmentUrl + '\'' +
+                '}';
     }
 }

@@ -48,11 +48,11 @@ public class AlternativeHttpClientImpl extends HttpClientBase implements HttpRes
 
     private static final MediaType TEXT = MediaType.parse("text/plain; charset=utf-8");
     private static final MediaType FORM_URL_ENCODED = MediaType.parse("application/x-www-form-urlencoded");
+    private static final MediaType APPLICATION_JSON = MediaType.parse("application/json");
 
     private OkHttpClient okHttpClient;
 
     //for test
-    public static boolean sPreferSpdy = true;
     public static boolean sPreferHttp2 = true;
     private Protocol lastRequestProtocol = null;
 
@@ -74,8 +74,10 @@ public class AlternativeHttpClientImpl extends HttpClientBase implements HttpRes
         requestBuilder.url(req.getURL()).headers(getHeaders(req));
         switch (req.getMethod()) {
             case HEAD:
-            case DELETE:
             case PUT:
+                break;
+            case DELETE:
+                requestBuilder.delete();
                 break;
             case GET:
                 requestBuilder.get();
@@ -172,6 +174,8 @@ public class AlternativeHttpClientImpl extends HttpClientBase implements HttpRes
                 }
             }
             return multipartBodyBuilder.build();
+        } else if (HttpParameter.containsJson(req.getParameters())) {
+            return RequestBody.create(APPLICATION_JSON, req.getParameters()[0].getJsonObject().toString());
         } else {
             return RequestBody.create(FORM_URL_ENCODED, HttpParameter.encodeParameters(req.getParameters()).getBytes("UTF-8"));
         }
@@ -239,7 +243,6 @@ public class AlternativeHttpClientImpl extends HttpClientBase implements HttpRes
             List<Protocol> protocols = new ArrayList<Protocol>();
             protocols.add(Protocol.HTTP_1_1);
             if (sPreferHttp2) protocols.add(Protocol.HTTP_2);
-            if (sPreferSpdy) protocols.add(Protocol.SPDY_3);
             builder.protocols(protocols);
 
             //connectionPool setup
@@ -296,4 +299,8 @@ public class AlternativeHttpClientImpl extends HttpClientBase implements HttpRes
         return lastRequestProtocol;
     }
 
+    public OkHttpClient getOkHttpClient() {
+        prepareOkHttpClient();
+        return okHttpClient;
+    }
 }

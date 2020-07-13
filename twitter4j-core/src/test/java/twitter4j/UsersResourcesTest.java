@@ -15,26 +15,24 @@
  */
 package twitter4j;
 
+import org.junit.jupiter.api.Test;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.Date;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Yusuke Yamamoto - yusuke at mac.com
  * @since Twitter4J 2.2.4
  */
-public class UsersResourcesTest extends TwitterTestBase {
+class UsersResourcesTest extends TwitterTestBase {
     private long twit4jblockID = 39771963L;
 
-    public UsersResourcesTest(String name) {
-        super(name);
-    }
 
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
-    public void testShowUser() throws Exception {
+    @Test
+    void testShowUser() throws Exception {
         User user = twitter1.showUser("yusuke");
         assertEquals("yusuke", user.getScreenName());
         assertNotNull(user.getLocation());
@@ -108,7 +106,8 @@ public class UsersResourcesTest extends TwitterTestBase {
         assertEquals(user, TwitterObjectFactory.createUser(TwitterObjectFactory.getRawJSON(user)));
     }
 
-    public void testLookupUsers() throws TwitterException {
+    @Test
+    void testLookupUsers() throws TwitterException {
         ResponseList<User> users = twitter1.lookupUsers(id1.screenName, id2.screenName);
         assertEquals(2, users.size());
         assertContains(users, id1);
@@ -137,7 +136,8 @@ public class UsersResourcesTest extends TwitterTestBase {
 
     }
 
-    public void testSearchUser() throws TwitterException {
+    @Test
+    void testSearchUser() throws TwitterException {
         ResponseList<User> users = twitter1.searchUsers("Doug Williams", 1);
         assertTrue(4 < users.size());
         assertNotNull(TwitterObjectFactory.getRawJSON(users.get(0)));
@@ -146,7 +146,8 @@ public class UsersResourcesTest extends TwitterTestBase {
     }
 
 
-    public void testBanner() throws Exception {
+    @Test
+    void testBanner() throws Exception {
         twitter1.updateProfileBanner(getRandomlyChosenFile(banners));
         User user = twitter1.verifyCredentials();
         if (user.getProfileBannerURL() != null) {
@@ -154,35 +155,31 @@ public class UsersResourcesTest extends TwitterTestBase {
         }
     }
 
-    public void testAccountMethods() throws Exception {
+    @Test
+    void testAccountMethods() throws Exception {
+        AccountSettings foobar = twitter1.updateAccountSettings(1 /* GLOBAL */, true,
+                "23", "08", "Rome", "en");
         User original = twitter1.verifyCredentials();
+
         assertNotNull(TwitterObjectFactory.getRawJSON(original));
         assertEquals(original, TwitterObjectFactory.createUser(TwitterObjectFactory.getRawJSON(original)));
-        if (original.getScreenName().endsWith("new") ||
-                original.getName().endsWith("new")) {
-            original = twitter1.updateProfile(
-                    "twit4j", "http://yusuke.homeip.net/twitter4j/"
-                    , "location:", "Hi there, I do test a lot!new");
 
-        }
-        String newName, newURL, newLocation, newDescription;
-        String neu = "new";
-        newName = original.getName() + neu;
-        newURL = original.getURL() + neu;
-        newLocation = new Date().toString();
-        newDescription = original.getDescription() + neu;
+        String newName = "name" + System.currentTimeMillis();
+        String newURL = "https://yusuke.blog/" + System.currentTimeMillis();
+        String newLocation = "city:" + System.currentTimeMillis();
+        String newDescription = "description:" + System.currentTimeMillis();
 
         User altered = twitter1.updateProfile(
                 newName, newURL, newLocation, newDescription);
         assertNotNull(TwitterObjectFactory.getRawJSON(altered));
         assertEquals(original, TwitterObjectFactory.createUser(TwitterObjectFactory.getRawJSON(original)));
         assertEquals(altered, TwitterObjectFactory.createUser(TwitterObjectFactory.getRawJSON(altered)));
-        twitter1.updateProfile(original.getName(), original.getURL().toString(), original.getLocation(), original.getDescription());
+        twitter1.updateProfile(original.getName(), original.getURL(), original.getLocation(), original.getDescription());
         assertEquals(newName, altered.getName());
-        assertEquals(newURL, altered.getURL().toString());
+        assertTrue(altered.getURL().startsWith("https://t.co/"));
         assertEquals(newLocation, altered.getLocation());
         assertEquals(newDescription, altered.getDescription());
-        
+
         AccountSettings settings = twitter1.getAccountSettings();
         assertTrue(settings.isSleepTimeEnabled());
         assertTrue(settings.isGeoEnabled());
@@ -195,7 +192,6 @@ public class UsersResourcesTest extends TwitterTestBase {
 
         AccountSettings intermSettings = twitter1.updateAccountSettings(1 /* GLOBAL */, true,
                 "23", "08", "Helsinki", "it");
-        assertTrue(intermSettings.isSleepTimeEnabled());
         assertEquals(intermSettings.getSleepStartTime(), "23");
         assertEquals(intermSettings.getSleepEndTime(), "8");
         assertTrue(intermSettings.isGeoEnabled());
@@ -206,22 +202,17 @@ public class UsersResourcesTest extends TwitterTestBase {
         Location[] intermLocations = intermSettings.getTrendLocations();
         assertTrue(0 < intermLocations.length);
 
-        AccountSettings lastSettings = twitter1.updateAccountSettings(settings.getTrendLocations()[0].getWoeid(), settings.isSleepTimeEnabled(),
+        AccountSettings lastSettings = twitter1.updateAccountSettings(1118370/*Tokyo*/, settings.isSleepTimeEnabled(),
                 settings.getSleepStartTime(), settings.getSleepStartTime(), settings.getTimeZone().getName(), settings.getLanguage());
         assertEquals(settings.getLanguage(), lastSettings.getLanguage());
         assertEquals(settings.isSleepTimeEnabled(), lastSettings.isSleepTimeEnabled());
         assertEquals(settings.getTimeZone().getName(), lastSettings.getTimeZone().getName());
-        assertEquals(settings.getSleepEndTime(), lastSettings.getSleepEndTime());
     }
 
-    public void testAccountProfileImageUpdates() throws Exception {
+    @Test
+    void testAccountProfileImageUpdates() throws Exception {
         User user = twitter1.updateProfileImage(new FileInputStream(getRandomlyChosenFile()));
         assertNotNull(TwitterObjectFactory.getRawJSON(user));
-        // tile randomly
-        User user2 = twitter1.updateProfileBackgroundImage(getRandomlyChosenFile(),
-                (5 < System.currentTimeMillis() % 5));
-        assertNotNull(TwitterObjectFactory.getRawJSON(user2));
-        assertEquals(user2, TwitterObjectFactory.createUser(TwitterObjectFactory.getRawJSON(user2)));
     }
 
     private static final String[] profileImages = {"src/test/resources/t4j-reverse.jpeg",
@@ -252,7 +243,11 @@ public class UsersResourcesTest extends TwitterTestBase {
         return file;
     }
 
-    public void testBlockMethods() throws Exception {
+    @Test
+    void testBlockMethods() throws Exception {
+        twitter1.createBlock(twit4jblockID);
+        twitter2.createBlock(twit4jblockID);
+
         User user1 = twitter2.createBlock(id1.screenName);
         assertNotNull(TwitterObjectFactory.getRawJSON(user1));
         assertEquals(user1, TwitterObjectFactory.createUser(TwitterObjectFactory.getRawJSON(user1)));
@@ -260,30 +255,31 @@ public class UsersResourcesTest extends TwitterTestBase {
         assertNotNull(TwitterObjectFactory.getRawJSON(user2));
         assertEquals(user2, TwitterObjectFactory.createUser(TwitterObjectFactory.getRawJSON(user2)));
 
-        user1 = twitter2.createBlock("@"+id1.screenName);
+        user1 = twitter2.createBlock("@" + id1.screenName);
         assertNotNull(TwitterObjectFactory.getRawJSON(user1));
         assertEquals(user1, TwitterObjectFactory.createUser(TwitterObjectFactory.getRawJSON(user1)));
-        user2 = twitter2.destroyBlock("@"+id1.screenName);
+        user2 = twitter2.destroyBlock("@" + id1.screenName);
         assertNotNull(TwitterObjectFactory.getRawJSON(user2));
         assertEquals(user2, TwitterObjectFactory.createUser(TwitterObjectFactory.getRawJSON(user2)));
 
         PagableResponseList<User> users = twitter1.getBlocksList();
         assertNotNull(TwitterObjectFactory.getRawJSON(users));
         assertEquals(users.get(0), TwitterObjectFactory.createUser(TwitterObjectFactory.getRawJSON(users.get(0))));
-        assertEquals(1, users.size());
+        assertTrue(users.size() >= 1);
         assertEquals(twit4jblockID, users.get(0).getId());
 
         IDs ids = twitter1.getBlocksIDs();
         assertNull(TwitterObjectFactory.getRawJSON(users));
         assertNotNull(TwitterObjectFactory.getRawJSON(ids));
-        assertEquals(1, ids.getIDs().length);
+        assertTrue(ids.getIDs().length >= 1);
         assertEquals(twit4jblockID, ids.getIDs()[0]);
 
         ids = twitter1.getBlocksIDs(-1);
         assertTrue(ids.getIDs().length > 0);
     }
 
-    public void testMuteMethods() throws Exception {
+    @Test
+    void testMuteMethods() throws Exception {
         User user1 = twitter2.createMute(id1.screenName);
         assertNotNull(TwitterObjectFactory.getRawJSON(user1));
         assertEquals(user1, TwitterObjectFactory.createUser(TwitterObjectFactory.getRawJSON(user1)));
@@ -291,11 +287,11 @@ public class UsersResourcesTest extends TwitterTestBase {
         assertNotNull(TwitterObjectFactory.getRawJSON(user2));
         assertEquals(user2, TwitterObjectFactory.createUser(TwitterObjectFactory.getRawJSON(user2)));
 
-        user1 = twitter2.createMute("@"+id1.screenName);
+        user1 = twitter2.createMute("@" + id1.screenName);
         assertNotNull(TwitterObjectFactory.getRawJSON(user1));
         assertEquals(user1, TwitterObjectFactory.createUser(TwitterObjectFactory.getRawJSON(user1)));
         try {
-            user2 = twitter2.destroyMute("@"+id1.screenName);
+            user2 = twitter2.destroyMute("@" + id1.screenName);
 //            assertNotNull(TwitterObjectFactory.getRawJSON(user2));
 //            assertEquals(user2, TwitterObjectFactory.createUser(TwitterObjectFactory.getRawJSON(user2)));
         } catch (TwitterException e) {

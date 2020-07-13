@@ -15,84 +15,73 @@
  */
 package twitter4j;
 
+import org.junit.jupiter.api.Test;
+
 import java.util.Date;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Yusuke Yamamoto - yusuke at mac.com
  * @since Twitter4J 2.2.4
  */
-public class DirectMessagesResourcesTest extends TwitterTestBase {
-    public DirectMessagesResourcesTest(String name) {
-        super(name);
+class DirectMessagesResourcesTest extends TwitterTestBase {
+    @Test
+    void testQuickResponse() throws Exception{
+        String message = "hello " + new Date().toString();
+        DirectMessage sent = rwPrivateMessage.sendDirectMessage(id1.id, message,
+                new QuickReply("label1", "description1","metadata1"),
+                new QuickReply("label2", "description2","metadata2"));
+        assertEquals(rwPrivate.id, sent.getSenderId());
+        assertEquals(id1.id, sent.getRecipientId());
+        assertEquals(2,    sent.getQuickReplies().length);
+
+        DirectMessage sent2 = twitter1.sendDirectMessage(rwPrivate.id, "label2",
+                "metadata2");
+        // https://twittercommunity.com/t/quick-reply-response-not-propagated/111006
+//        assertEquals("metadata2", sent2.getQuickReplyResponse());
+        assertEquals(rwPrivate.id, sent.getSenderId());
+        assertEquals(id1.id, sent.getRecipientId());
+
+
     }
 
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    @Test
+    void testNewDMAPIs() throws Exception {
+
+        // send dm
+
+        // ensure id1 is not blocking id2, and id2 is following id1
+        twitter1.destroyBlock(rwPrivate.id);
+        rwPrivateMessage.createFriendship(id1.id);
+        String message = "hello " + new Date().toString();
+        DirectMessage sent = twitter1.sendDirectMessage(rwPrivate.id, message);
+        assertEquals(rwPrivate.id, sent.getRecipientId());
+        assertEquals(id1.id, sent.getSenderId());
+        assertEquals(message, sent.getText());
+        assertEquals(sent, TwitterObjectFactory.createDirectMessage(TwitterObjectFactory.getRawJSON(sent)));
+
+        // receive dm
+        DirectMessage received = rwPrivateMessage.showDirectMessage(sent.getId());
+        assertEquals(rwPrivate.id, received.getRecipientId());
+        assertEquals(id1.id, received.getSenderId());
+        assertEquals(received, TwitterObjectFactory.createDirectMessage(TwitterObjectFactory.getRawJSON(received)));
+
+        // destroy dm
+        DirectMessageList directMessages = rwPrivateMessage.getDirectMessages(100);
+        assertTrue(directMessages.size() > 0);
+
+        // message with quick reply
+
+        DirectMessage directMessageWithQuickReplies = twitter1.sendDirectMessage(rwPrivate.id, "hello" + new Date(), new QuickReply("らべる１", "説明1", "めたでーた1")
+                , new QuickReply("label2", "description 2", "metadata 2")
+                , new QuickReply("label3", "description 3", null));
+        QuickReply[] quickReplies = directMessageWithQuickReplies.getQuickReplies();
+        assertEquals(3, quickReplies.length);
+        assertEquals(new QuickReply("らべる１", "説明1", "めたでーた1"), quickReplies[0]);
+        assertNull(quickReplies[2].getMetadata());
+
+        rwPrivateMessage.destroyDirectMessage(received.getId());
     }
 
-    public void testDirectMessages() throws Exception {
-        ResponseList<DirectMessage> directMessages = twitter3.getDirectMessages();
-        assertNotNull(TwitterObjectFactory.getRawJSON(directMessages));
-        assertEquals(directMessages.get(0), TwitterObjectFactory.createDirectMessage(TwitterObjectFactory.getRawJSON(directMessages.get(0))));
-        assertTrue(1 <= directMessages.size());
-        for (DirectMessage directMessage : directMessages) {
-            if (directMessage.getText().contains("directmessage test")) {
-                twitter3.destroyDirectMessage(directMessage.getId());
-            }
-            if (directMessage.getText().contains("@t4j_news")) {
-                System.out.println(directMessage.getText());
-                System.out.println("id------:" + directMessage.getId());
-                break;
-            }
-        }
-
-        String expectedReturn = new Date() + " < #test > &ほげほげ @t4j_news %& http://twitter4j.org/en/index.html#download pic.twitter.com/d4G7MQ62";
-        DirectMessage sent = twitter1.sendDirectMessage(id3.id, new Date() + ":directmessage test");
-        long showDMId = 387419692844863489L;
-        DirectMessage dm = twitter3.showDirectMessage(showDMId);
-
-        assertNotNull(TwitterObjectFactory.getRawJSON(dm));
-        assertEquals(dm, TwitterObjectFactory.createDirectMessage(TwitterObjectFactory.getRawJSON(dm)));
-        assertEquals(showDMId, dm.getId());
-
-        assertTrue(0 <= dm.getId());
-        assertNotNull(TwitterObjectFactory.getRawJSON(dm));
-        assertEquals(dm, TwitterObjectFactory.createDirectMessage(TwitterObjectFactory.getRawJSON(dm)));
-        // urls are wrapped by t.co. thus assertEquals doesn't apply
-        assertTrue(dm.getText().contains(" < #test > &ほげほげ @t4j_news %&"));
-        assertEquals(id1.screenName, dm.getSender().getScreenName());
-        assertEquals(id3.screenName, dm.getRecipient().getScreenName());
-
-
-        assertTrue(dm.getUserMentionEntities().length == 1);
-        UserMentionEntity userMentionEntity = dm.getUserMentionEntities()[0];
-        assertEquals("t4j_news", userMentionEntity.getScreenName());
-        assertEquals("@t4j_news", dm.getText().substring(userMentionEntity.getStart(), userMentionEntity.getEnd()));
-
-        assertTrue(dm.getHashtagEntities().length == 1);
-        HashtagEntity hashtagEntity = dm.getHashtagEntities()[0];
-        assertEquals("test", hashtagEntity.getText());
-        assertEquals("#test", dm.getText().substring(hashtagEntity.getStart(), hashtagEntity.getEnd()));
-
-//        assertTrue(dm.getMediaEntities().length == 1);
-//        MediaEntity mediaEntity = dm.getMediaEntities()[0];
-        // XXXXX of pic.twitter.com/XXXXX is altered by the API. assertEquals("pic.twitter.com/d4G7MQ62".. doesn't apply
-
-//        assertTrue(mediaEntity.getDisplayURL().startsWith("pic.twitter.com/"));
-//        assertTrue(dm.getText().substring(mediaEntity.getStart(), mediaEntity.getEnd()).matches("http://t.co/[a-zA-Z0-9]+"));
-//        assertEquals("http://twitter.com/yusuke/status/268294645526708226/photo/1", mediaEntity.getExpandedURL());
-
-        assertTrue(dm.getURLEntities().length > 0);
-        URLEntity urlEntity = dm.getURLEntities()[0];
-        assertEquals("twitter4j.org/en/index.html#…", urlEntity.getDisplayURL());
-        assertTrue(dm.getText().substring(urlEntity.getStart(), urlEntity.getEnd()).matches("http://t.co/[a-zA-Z0-9]+"));
-        assertEquals("http://twitter4j.org/en/index.html#download", urlEntity.getExpandedURL());
-
-        try {
-            dm = twitter1.showDirectMessage(showDMId);
-        } catch (TwitterException te) {
-            // twitter1 is not allowed to access or delete your direct messages
-            assertEquals(403, te.getStatusCode());
-        }
-    }
 }

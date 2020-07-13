@@ -221,7 +221,6 @@ public class OAuthAuthorization implements Authorization, java.io.Serializable, 
     private void parseGetParameters(String url, List<HttpParameter> signatureBaseParams) {
         int queryStart = url.indexOf("?");
         if (-1 != queryStart) {
-            url.split("&");
             String[] queryStrs = url.substring(queryStart + 1).split("&");
             try {
                 for (String query : queryStrs) {
@@ -378,7 +377,7 @@ public class OAuthAuthorization implements Authorization, java.io.Serializable, 
     public static String encodeParameters(List<HttpParameter> httpParams, String splitter, boolean quot) {
         StringBuilder buf = new StringBuilder();
         for (HttpParameter param : httpParams) {
-            if (!param.isFile()) {
+            if (!param.isFile() && !param.isJson()) {
                 if (buf.length() != 0) {
                     if (quot) {
                         buf.append("\"");

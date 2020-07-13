@@ -79,27 +79,6 @@ final class LazyDirectMessage implements twitter4j.DirectMessage {
         return getTarget().getCreatedAt();
     }
 
-
-    public String getSenderScreenName() {
-        return getTarget().getSenderScreenName();
-    }
-
-
-    public String getRecipientScreenName() {
-        return getTarget().getRecipientScreenName();
-    }
-
-
-    public User getSender() {
-        return getTarget().getSender();
-    }
-
-
-    public User getRecipient() {
-        return getTarget().getRecipient();
-    }
-
-
     public RateLimitStatus getRateLimitStatus() {
         return getTarget().getRateLimitStatus();
     }
@@ -131,6 +110,16 @@ final class LazyDirectMessage implements twitter4j.DirectMessage {
     @Override
     public SymbolEntity[] getSymbolEntities() {
         return getTarget().getSymbolEntities();
+    }
+
+    @Override
+    public QuickReply[] getQuickReplies() {
+        return getTarget().getQuickReplies();
+    }
+
+    @Override
+    public String getQuickReplyResponse() {
+        return getTarget().getQuickReplyResponse();
     }
 
     @Override

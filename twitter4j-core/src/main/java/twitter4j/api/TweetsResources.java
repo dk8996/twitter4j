@@ -130,6 +130,18 @@ public interface TweetsResources {
     Status retweetStatus(long statusId) throws TwitterException;
 
     /**
+     * Untweets a retweeted status. Returns the original Tweet with retweet details embedded.
+     * <br>This method calls https://api.twitter.com/1.1/statuses/unretweet
+     *
+     * @param statusId The ID of the status to un-retweet.
+     * @return the original Tweet with retweet details embedded
+     * @throws TwitterException when Twitter service or network is unavailable
+     * @see <a href="https://dev.twitter.com/docs/api/1.1/post/statuses/unretweet/:id">POST statuses/unretweet/:id | Twitter Developers</a>
+     * @since Twitter4J 4.0.7
+     */
+    Status unRetweetStatus(long statusId) throws TwitterException;
+
+    /**
      * Returns information allowing the creation of an embedded representation of a Tweet on third party sites. See the <a href="http://oembed.com/">oEmbed</a> specification for information about the response format.
      * While this endpoint allows a bit of customization for the final appearance of the embedded Tweet, be aware that the appearance of the rendered Tweet may change over time to be consistent with Twitter's <a href="https://dev.twitter.com/terms/display-requirements">Display Requirements</a>. Do not rely on any class or id parameters to stay constant in the returned markup.
      * <br>This method calls https://api.twitter.com/1.1/statuses/oembed.json
@@ -194,7 +206,7 @@ public interface TweetsResources {
      * @see <a href="https://dev.twitter.com/rest/public/uploading-media#chunkedupload">Uploading Media | Twitter Developers</a>
      * @see <a href="https://dev.twitter.com/docs/api/1.1/post/statuses/update">POST statuses/update | Twitter Developers</a>
      * @see <a href="https://dev.twitter.com/docs/api/multiple-media-extended-entities">Multiple Media Entities in Statuses</a>
-     * @since Twitter4J 4.0.3
+     * @since Twitter4J 4.0.7
      */
     UploadedMedia uploadMediaChunked(String fileName, InputStream media) throws TwitterException;
 }

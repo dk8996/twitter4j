@@ -16,6 +16,8 @@
 
 package twitter4j;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import twitter4j.auth.AccessToken;
 
 import java.io.InputStream;
@@ -24,26 +26,28 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 public class StreamAPITest extends TwitterTestBase implements StatusListener, ConnectionLifeCycleListener {
     private long userId;
     private long upToStatusId;
     private StallWarning warning;
 
-    public StreamAPITest(String name) {
-        super(name);
-    }
 
-    protected void setUp() throws Exception {
-        super.setUp();
+    @BeforeEach
+    protected void beforeEach() throws Exception {
+        super.beforeEach();
         this.status = null;
         this.deletionNotice = null;
     }
 
-    public void testToString() throws Exception {
+    @Test
+    void testToString() throws Exception {
         new TwitterStreamFactory().getInstance().toString();
     }
 
-    public void testEquality() throws Exception {
+    @Test
+    void testEquality() throws Exception {
         Map<TwitterStream, String> map = new HashMap<TwitterStream, String>();
         TwitterStream twitterStream1 = new TwitterStreamFactory().getInstance();
         TwitterStream twitterStream2 = new TwitterStreamFactory().getInstance();
@@ -55,9 +59,9 @@ public class StreamAPITest extends TwitterTestBase implements StatusListener, Co
     final List<String> received = new ArrayList<String>();
     final Object lock = new Object();
 
-    public void testRawStreamListener() throws Exception {
-        TwitterStream twitterStream1 = new TwitterStreamFactory(bestFriend1Conf).getInstance();
-        twitterStream1.addListener(new RawStreamListener() {
+    @Test
+    void testRawStreamListener() throws Exception {
+        TwitterStream twitterStream1 = new TwitterStreamFactory(bestFriend1Conf).getInstance().addListener(new RawStreamListener() {
             @Override
             public void onMessage(String rawString) {
                 received.add(rawString);
@@ -69,8 +73,7 @@ public class StreamAPITest extends TwitterTestBase implements StatusListener, Co
             @Override
             public void onException(Exception ex) {
             }
-        });
-        twitterStream1.sample();
+        }).sample();
         synchronized (lock) {
             lock.wait();
         }
@@ -78,7 +81,8 @@ public class StreamAPITest extends TwitterTestBase implements StatusListener, Co
         twitterStream1.shutdown();
     }
 
-    public void testNoListener() throws Exception {
+    @Test
+    void testNoListener() throws Exception {
         TwitterStream twitterStream;
         twitterStream = new TwitterStreamFactory().getInstance();
         twitterStream.setOAuthConsumer("dummy", "dummy");
@@ -90,11 +94,6 @@ public class StreamAPITest extends TwitterTestBase implements StatusListener, Co
         }
         try {
             twitterStream.filter(new FilterQuery().track(new String[]{"twitter"}));
-            fail("expecting IllegalStateException");
-        } catch (IllegalStateException ignored) {
-        }
-        try {
-            twitterStream.user();
             fail("expecting IllegalStateException");
         } catch (IllegalStateException ignored) {
         }
@@ -117,14 +116,11 @@ public class StreamAPITest extends TwitterTestBase implements StatusListener, Co
             @Override
             public void onException(Exception ex) {
             }
-        });
-
-        twitterStream.sample();
-        twitterStream.cleanUp();
-        twitterStream.shutdown();
+        }).sample().cleanUp().shutdown();
     }
 
-    public void testStatusStream() throws Exception {
+    @Test
+    void testStatusStream() throws Exception {
         InputStream is = TwitterTestBase.class.getResourceAsStream("/streamingapi-testcase.json");
         StatusStream stream = new StatusStreamImpl(new DispatcherFactory().getInstance(), is, conf1);
         stream.next(this);
@@ -164,7 +160,8 @@ public class StreamAPITest extends TwitterTestBase implements StatusListener, Co
         is.close();
     }
 
-    public void testSample() throws Exception {
+    @Test
+    void testSample() throws Exception {
         TwitterStream twitterStream2 = new TwitterStreamFactory(conf3).getInstance();
         twitterStream2.addListener(this);
         twitterStream2.sample();
@@ -184,14 +181,15 @@ public class StreamAPITest extends TwitterTestBase implements StatusListener, Co
         status = null;
         waitForStatus();
         assertTrue(statuses.size() > 0);
-        assertNull("ensure that original listener doesn't receive any statuses", status);
+        assertNull(status, "ensure that original listener doesn't receive any statuses");
         twitterStream2.shutdown();
     }
 
-    public void testShutdownAndRestart() throws Exception {
-        TwitterStream twitterStream3 = new TwitterStreamFactory(conf3).getInstance();
-        twitterStream3.addListener(this);
-        twitterStream3.sample();
+    @Test
+    void testShutdownAndRestart() throws Exception {
+        TwitterStream twitterStream3 = new TwitterStreamFactory(conf3).getInstance()
+                .addListener(this)
+                .sample();
         waitForStatus();
         twitterStream3.shutdown();
         twitterStream3.shutdown();
@@ -201,10 +199,11 @@ public class StreamAPITest extends TwitterTestBase implements StatusListener, Co
         twitterStream3.shutdown();
     }
 
-    public void testFilterTrackPush() throws Exception {
-        TwitterStream twitterStream1 = new TwitterStreamFactory(conf2).getInstance();
-        twitterStream1.addListener(this);
-        twitterStream1.addConnectionLifeCycleListener(this);
+    @Test
+    void testFilterTrackPush() throws Exception {
+        TwitterStream twitterStream1 = new TwitterStreamFactory(conf2).getInstance()
+                .addListener(this)
+                .addConnectionLifeCycleListener(this);
         assertFalse(onConnectCalled);
         assertFalse(onDisconnectCalled);
         assertFalse(onCleanUpCalled);
@@ -231,7 +230,8 @@ public class StreamAPITest extends TwitterTestBase implements StatusListener, Co
         twitterStream1.shutdown();
     }
 
-    public void testFilterIncludesEntities() throws Exception {
+    @Test
+    void testFilterIncludesEntities() throws Exception {
         this.ex = null;
 
         FilterQuery query = new FilterQuery(0, null, new String[]{"http", "#", "@"});
@@ -269,7 +269,8 @@ public class StreamAPITest extends TwitterTestBase implements StatusListener, Co
         onCleanUpCalled = true;
     }
 
-    public void testUnAuthorizedStreamMethods() throws Exception {
+    @Test
+    void testUnAuthorizedStreamMethods() throws Exception {
         TwitterStream twitterStream3 = null;
         try {
             twitterStream3 = new TwitterStreamFactory(conf2).getInstance();

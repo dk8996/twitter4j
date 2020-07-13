@@ -1,7 +1,5 @@
 Twitter4J is a Twitter API binding library for the Java language licensed under Apache License 2.0.
 
-Twitter4J includes software from JSON.org to parse JSON response from the Twitter API. You can see the license term at http://www.JSON.org/license.html
-
 LICENSE.txt - the terms of license of this software
 pom.xml - maven parent pom
 powered-by-badge - badge
@@ -9,7 +7,6 @@ readme.txt - this file
 twitter4j-core - core component : support REST and Search API
 twitter4j-apache-httpclient-support - optional component adds Apache HttpClient support
 twitter4j-examples - examples
-twitter4j-media-support - media API support
 twitter4j-async - Async API support : depending on twitter4j-core
 twitter4j-stream - Streaming API support : depending on twitter4j-core and twitter4j-async
 twitter4j-http2-support - HTTP/2 support : adds HTTP/2 support, boosts Twitter4J performance, reduce packets, save the earth
@@ -24,6 +21,7 @@ Alan Gutierrez <alan at blogometer.com>
 Alessandro Bahgat <ale.bahgat at gmail.com> @abahgat
 Alex Kira <alex.kira at gmail.com> @alexkira
 Amine Bezzarga <abezzarg at gmail.com> @Go_Mino
+Aniket Divekar
 Anton Novopashin <antonevane at gmail.com> @anton_evane
 Andy Boothe <andy.boothe at gmail.com> @sigpwned
 Blake Barnes <blake.barnes at gmail.com>
@@ -37,10 +35,13 @@ Dan Checkoway <dcheckoway at gmail.com>
 Danaja Maldeniya <danajamkdt at gmail.com> @DanajaT
 Daniel Huckaby <handlerexploit at gmail.com> @HandlerExploit
 Denis Bardadym <bardadymchik at gmail.com> @bardadymchik
+Dimitry Kudryavtsev <dk8996 at gmail.com> @dk8996
 Dong Wang <dong at twitter.com> @dongwang218
 Eli Israel <eli at meshfire.com> @eliasisrael
+Enrico Candino <enrico.candino at gmail.com> @enrichmann
 Eric Jensen <ej at twitter.com> @ej
 Fiaz Hossain <fiaz at twitter.com> @fiazhossain
+Fran Garcia <fgarciarico at gmail.com> @frangarcia
 Gabriel Zanetti @pupi1985
 George Ludwig <georgeludwig at gmail.com> @georgeludwig
 Gonçalo Silva <goncalossilva at gmail.com> @goncalossilva
@@ -64,14 +65,19 @@ Julien Letrouit <julien.letrouit at gmail.com> @jletroui
 Jumpei Matsuda <j.matsuda.bb26th at gmail.com> @fat_daruuuuma
 Keiichi Hirano <hirano.kei1 at gmail.com> @haushinka2dx
 Kenji Yoshida <6b656e6a69 at gmail.com> @xuwei_k
+Kevin Huang
 Komiya Atsushi <komiya.atsushi at gmail.com> @komiya_atsushi
+Koutaro Mori <koutaro.mo at gmail.com> @moko256
 Linker Lin <linker.lin at live.com>
 Ludovico Fischer @ludovicofischer
+Lynn Walton
 marr-masaaki <marr fiveflavors at gmail.com> @marr
 matsumo <matsumo at ce.ns0.it> @sardinej
+Mathias Kahl <mathias.kahl at gmail.com> @Bunkerbewohner1
 Matteo Nicoletti <matteo at kaosmos.it> @kaosmos
 Matteo Villa @mttvll
 Max Penet <m at qbits.cc> @mpenet
+Michael Templeman
 Mike Champion <mike at graysky.org> @graysky
 Mocel <docel77 at gmail.com> @Mocel
 MortyChoi <soapsign at gmail.com> @Soapsign
@@ -84,6 +90,7 @@ Nicolas Bouillon <nicolas at bouil.org>
 Nicholas Dellamaggiore <nick.dellamaggiore at gmail.com> @nickdella
 Nils Haldenwang @nilshaldenwang
 Niv Singer <niv at innerlogics.com> @nivs
+Philip Hachey <philip dot hachey at gmail dot com> @krallus
 Pierre Lanvin <pierre.lanvin@gmail.com> @planvin
 Pieter Meiresone @_MPieter
 Perry Sakkaris <psakkaris at gmail.com>
@@ -105,11 +112,14 @@ Talal Ahmed <talal at venexel.ca>
 Takao Nakaguchi <takao.nakaguchi at gmail.com> @takawitter
 Takatoshi Murakami
 Takuro Yamane <alalwww at awairo.net> @alalwww
+Ted Dunning <tdunning at apache.org> @ted_dunning
+Tom Zellman <tzellman at gmail.com> @tzellman
 Tomasz Nurkiewicz @tnurkiewicz
 Tomoaki Iwasaki <multicolorworld.shinku at gmail.com> @MulticolorWorld
 Tomoaki Takezoe <sumito3478 at gmail.com> @sumito3478
 Tomohisa Igarashi <tm.igarashi at gmail.com>
 Tyler MacLeod
+Venil Noronha <venil.noronha at gmail.com> @venilnoronha
 Will Glozer <will at glozer.net> @ar3te
 William Morgan <william at twitter.com> @wm
 William O'Hanley <william at wohanley.com> @wohanley

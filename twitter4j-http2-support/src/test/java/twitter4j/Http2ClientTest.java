@@ -16,110 +16,84 @@
 
 package twitter4j;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 /**
- * Test case for HttpCient
+ * Test case for HttpClient
+ * The fllowing argument is required to run this test case:
+ * -Xbootclasspath/p:~/.m2/repository/org/mortbay/jetty/alpn/alpn-boot/8.1.12.v20180117/alpn-boot-8.1.12.v20180117.jar
  *
  * @author Hiroaki Takeuchi - takke30 at gmail.com
  * @since Twitter4J 3.0.6
  */
-public class Http2ClientTest extends TestCase {
+public class Http2ClientTest {
 
-    // specify running order
-    public static Test suite() {
+    private static final boolean alpnBootJarFoundInBootClassPath;
+    private static boolean ellipticCurvesExtensionFoundInClassPath;
 
-        TestSuite suite = new TestSuite();
+    static {
 
-        suite.addTest(new Http2ClientTest("testNoPreferOption"));    // must be called first
-        suite.addTest(new Http2ClientTest("testHttp2"));
-        suite.addTest(new Http2ClientTest("testSpdy"));
-        suite.addTest(new Http2ClientTest("testNoSpdy"));
+        alpnBootJarFoundInBootClassPath = System.getProperty("sun.boot.class.path").matches(".*alpn-boot-[0-9.]+\\.v[0-9]+\\.jar.*");
+        if (alpnBootJarFoundInBootClassPath) {
+            System.out.println("alpn jar found in boot classpath.");
+        } else {
+            System.out.println("alpn jar not found in boot classpath.");
+        }
 
-        return suite;
+        try {
+            Class.forName("sun.security.ssl.EllipticCurvesExtension");
+            ellipticCurvesExtensionFoundInClassPath = true;
+        } catch (ClassNotFoundException e) {
+            // this test case require 1.8.0u162 or later
+            ellipticCurvesExtensionFoundInClassPath = false;
+        }
     }
 
-    public Http2ClientTest(String name) {
-        super(name);
+    @Test
+    void testNoPreferOption() throws Exception {
+        // no prefer option
+        if (alpnBootJarFoundInBootClassPath && ellipticCurvesExtensionFoundInClassPath) {
+            AlternativeHttpClientImpl http = callOembed();
+
+            // check HTTP/2.0
+            Field f = http.getClass().getDeclaredField("okHttpClient");
+            f.setAccessible(true);
+            OkHttpClient client = (OkHttpClient) f.get(http);
+            assertNotNull(client, "ensure that OkHttpClient is used");
+
+            ConnectionPool p = client.connectionPool();
+            assertEquals(1, p.connectionCount());
+
+            assertEquals(Protocol.HTTP_2, http.getLastRequestProtocol());
+        }
+
+        // http2
+        if (alpnBootJarFoundInBootClassPath && ellipticCurvesExtensionFoundInClassPath) {
+            AlternativeHttpClientImpl.sPreferHttp2 = true;
+            AlternativeHttpClientImpl http = callOembed();
+
+            // check HTTP/2.0
+            Field f = http.getClass().getDeclaredField("okHttpClient");
+            f.setAccessible(true);
+            OkHttpClient client = (OkHttpClient) f.get(http);
+            assertNotNull(client, "ensure that OkHttpClient is used");
+
+            ConnectionPool p = client.connectionPool();
+            assertEquals(1, p.connectionCount());
+
+            assertEquals(Protocol.HTTP_2, http.getLastRequestProtocol());
+        }
     }
 
-    protected void tearDown() {
-    }
-
-    public void testNoPreferOption() throws Exception {
-        AlternativeHttpClientImpl http = callOembed();
-
-        // check HTTP/2.0
-        Field f = http.getClass().getDeclaredField("okHttpClient");
-        f.setAccessible(true);
-        OkHttpClient client = (OkHttpClient) f.get(http);
-        assertNotNull("ensure that OkHttpClient is used", client);
-
-        ConnectionPool p = client.connectionPool();
-        assertEquals(1, p.connectionCount());
-
-        assertEquals(Protocol.HTTP_2, http.getLastRequestProtocol());
-    }
-
-    public void testSpdy() throws Exception {
-        AlternativeHttpClientImpl.sPreferSpdy = true;
-        AlternativeHttpClientImpl.sPreferHttp2 = false;
-        AlternativeHttpClientImpl http = callOembed();
-
-        // check SPDY
-        Field f = http.getClass().getDeclaredField("okHttpClient");
-        f.setAccessible(true);
-        OkHttpClient client = (OkHttpClient) f.get(http);
-        assertNotNull("ensure that OkHttpClient is used", client);
-
-        ConnectionPool p = client.connectionPool();
-        assertEquals(1, p.connectionCount());
-
-        assertEquals(Protocol.SPDY_3, http.getLastRequestProtocol());
-    }
-
-    public void testHttp2() throws Exception {
-        AlternativeHttpClientImpl.sPreferSpdy = false;
-        AlternativeHttpClientImpl.sPreferHttp2 = true;
-        AlternativeHttpClientImpl http = callOembed();
-
-        // check HTTP/2.0
-        Field f = http.getClass().getDeclaredField("okHttpClient");
-        f.setAccessible(true);
-        OkHttpClient client = (OkHttpClient) f.get(http);
-        assertNotNull("ensure that OkHttpClient is used", client);
-
-        ConnectionPool p = client.connectionPool();
-        assertEquals(1, p.connectionCount());
-
-        assertEquals(Protocol.HTTP_2, http.getLastRequestProtocol());
-    }
-
-    public void testNoSpdy() throws Exception {
-        AlternativeHttpClientImpl.sPreferSpdy = false;
-        AlternativeHttpClientImpl.sPreferHttp2 = false;
-
-        AlternativeHttpClientImpl http = callOembed();
-
-        // check not SPDY
-        Field f = http.getClass().getDeclaredField("okHttpClient");
-        f.setAccessible(true);
-        OkHttpClient client = (OkHttpClient) f.get(http);
-
-        ConnectionPool p = client.connectionPool();
-        assertEquals(1, p.connectionCount());
-
-        assertEquals(Protocol.HTTP_1_1, http.getLastRequestProtocol());
-    }
-
-    private AlternativeHttpClientImpl callOembed() throws TwitterException, JSONException {
+    private AlternativeHttpClientImpl callOembed() throws TwitterException {
         AlternativeHttpClientImpl http = new AlternativeHttpClientImpl();
         String url = "https://api.twitter.com/1/statuses/oembed.json?id=441617258578583554";
 
@@ -129,15 +103,18 @@ public class Http2ClientTest extends TestCase {
 
         return http;
     }
-    
-    public void testUploadMediaFromStream() throws Exception {
-        Twitter twitter = TwitterFactory.getSingleton();
-        UploadedMedia media2 = twitter.uploadMedia("fromInputStream", 
-                Http2ClientTest.class.getResourceAsStream("/twitter4j.jpg"));
 
-        StatusUpdate update = new StatusUpdate("from input stream");
-        update.setMediaIds(media2.getMediaId());
-        Status status = twitter.updateStatus(update);
-        assertEquals("from input stream", status.getText());
+    @Test
+    void testUploadMediaFromStream() throws Exception {
+        if (alpnBootJarFoundInBootClassPath && ellipticCurvesExtensionFoundInClassPath) {
+            Twitter twitter = TwitterFactory.getSingleton();
+            UploadedMedia media2 = twitter.uploadMedia("fromInputStream",
+                    Http2ClientTest.class.getResourceAsStream("/twitter4j.jpg"));
+
+            StatusUpdate update = new StatusUpdate("from input stream");
+            update.setMediaIds(media2.getMediaId());
+            Status status = twitter.updateStatus(update);
+            assertEquals("from input stream", status.getText());
+        }
     }
 }

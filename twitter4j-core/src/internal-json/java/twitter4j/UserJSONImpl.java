@@ -256,8 +256,13 @@ import java.util.Date;
         return toResizedURL(profileImageUrl, "");
     }
 
+    @Override
+    public String get400x400ProfileImageURL() {
+        return toResizedURL(profileImageUrl, "_400x400");
+    }
+
     private String toResizedURL(String originalURL, String sizeSuffix) {
-        if (null != originalURL) {
+        if (null != originalURL && originalURL.length() >= 1) {
             int index = originalURL.lastIndexOf("_");
             int suffixIndex = originalURL.lastIndexOf(".");
             int slashIndex = originalURL.lastIndexOf("/");
@@ -288,6 +293,11 @@ import java.util.Date;
     @Override
     public String getOriginalProfileImageURLHttps() {
         return toResizedURL(profileImageUrlHttps, "");
+    }
+
+    @Override
+    public String get400x400ProfileImageURLHttps() {
+        return toResizedURL(profileImageUrlHttps, "_400x400");
     }
 
     @Override
@@ -425,6 +435,21 @@ import java.util.Date;
     @Override
     public String getProfileBannerMobileRetinaURL() {
         return profileBannerImageUrl != null ? profileBannerImageUrl + "/mobile_retina" : null;
+    }
+
+    @Override
+    public String getProfileBanner300x100URL() {
+        return profileBannerImageUrl != null ? profileBannerImageUrl + "/300x100" : null;
+    }
+
+    @Override
+    public String getProfileBanner600x200URL() {
+        return profileBannerImageUrl != null ? profileBannerImageUrl + "/600x200" : null;
+    }
+
+    @Override
+    public String getProfileBanner1500x500URL() {
+        return profileBannerImageUrl != null ? profileBannerImageUrl + "/1500x500" : null;
     }
 
     @Override

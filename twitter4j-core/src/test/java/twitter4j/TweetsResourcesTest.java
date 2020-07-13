@@ -15,25 +15,25 @@
  */
 package twitter4j;
 
+import org.junit.jupiter.api.Test;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 /**
  * @author Yusuke Yamamoto - yusuke at mac.com
  * @since Twitter4J 2.2.4
  */
-public class TweetsResourcesTest extends TwitterTestBase {
-    public TweetsResourcesTest(String name) {
-        super(name);
-    }
+class TweetsResourcesTest extends TwitterTestBase {
 
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
-    public void testShowStatus() throws Exception {
+    @Test
+    void testShowStatus() throws Exception {
         Status status;
         status = TwitterObjectFactory.createStatus("{\"text\":\"\\\\u5e30%u5e30 &lt;%\\u007d& foobar &lt;&Cynthia&gt;\",\"contributors\":null,\"geo\":null,\"retweeted\":false,\"in_reply_to_screen_name\":null,\"truncated\":false,\"entities\":{\"urls\":[],\"hashtags\":[],\"user_mentions\":[]},\"in_reply_to_status_id_str\":null,\"id\":12029015787307008,\"in_reply_to_user_id_str\":null,\"source\":\"web\",\"favorited\":false,\"in_reply_to_status_id\":null,\"in_reply_to_user_id\":null,\"created_at\":\"Tue Dec 07 06:21:55 +0000 2010\",\"retweet_count\":0,\"id_str\":\"12029015787307008\",\"place\":null,\"user\":{\"location\":\"location:\",\"statuses_count\":13405,\"profile_background_tile\":false,\"lang\":\"en\",\"profile_link_color\":\"0000ff\",\"id\":6358482,\"following\":true,\"favourites_count\":2,\"protected\":false,\"profile_text_color\":\"000000\",\"contributors_enabled\":false,\"description\":\"Hi there, I do test a lot!new\",\"verified\":false,\"profile_sidebar_border_color\":\"87bc44\",\"name\":\"twit4j\",\"profile_background_color\":\"9ae4e8\",\"created_at\":\"Sun May 27 09:52:09 +0000 2007\",\"followers_count\":24,\"geo_enabled\":true,\"profile_background_image_url\":\"http://a3.twimg.com/profile_background_images/179009017/t4j-reverse.gif\",\"follow_request_sent\":false,\"url\":\"http://yusuke.homeip.net/twitter4j/\",\"utc_offset\":-32400,\"time_zone\":\"Alaska\",\"notifications\":false,\"friends_count\":4,\"profile_use_background_image\":true,\"profile_sidebar_fill_color\":\"e0ff92\",\"screen_name\":\"twit4j\",\"id_str\":\"6358482\",\"profile_image_url\":\"http://a3.twimg.com/profile_images/1184543043/t4j-reverse_normal.jpeg\",\"show_all_inline_media\":false,\"listed_count\":3},\"coordinates\":null}");
         assertEquals("\\u5e30%u5e30 <%}& foobar <&Cynthia>", status.getText());
@@ -60,34 +60,25 @@ public class TweetsResourcesTest extends TwitterTestBase {
         assertEquals("\\u5e30%u5e30 <%}& foobar <&Cynthia>", status2.getText());
     }
 
-    public void testStatusMethods() throws Exception {
+    @Test
+    void testStatusMethods() throws Exception {
         String dateStr = new java.util.Date().toString();
-        String date = dateStr + "test http://t.co/VEDROet @" + id2.screenName + " #twitter4jtest";
+        String date = dateStr + "test mytweet @" + id2.screenName + " #twitter4jtest";
         Status status = twitter1.updateStatus(date);
         assertNotNull(TwitterObjectFactory.getRawJSON(status));
         assertEquals(status, TwitterObjectFactory.createStatus(TwitterObjectFactory.getRawJSON(status)));
 
-        assertTrue(status.getText().matches(dateStr + "test https://t.co/.* @" + id2.screenName + " #twitter4jtest"));
+        assertTrue(status.getText().contains("#twitter4jtest"));
 
         // http://jira.twitter4j.org/browse/TFJ-715
         // current_user_retweet contains only id
         Status retweeted = twitter2.retweetStatus(status.getId());
         assertTrue(retweeted.getText().endsWith(status.getText()));
-        List<Status> statuses = twitter2.getHomeTimeline();
-        boolean myRetweetFound = false;
-        for (Status s : statuses) {
-            if (s.getCurrentUserRetweetId() != -1L) {
-                myRetweetFound = true;
-                break;
-            }
-        }
-        assertTrue("myRetweet", myRetweetFound);
-
 
         Status status2 = twitter2.updateStatus(new StatusUpdate("@" + id1.screenName + " " + date).inReplyToStatusId(status.getId()));
         assertNotNull(TwitterObjectFactory.getRawJSON(status2));
         assertEquals(status2, TwitterObjectFactory.createStatus(TwitterObjectFactory.getRawJSON(status2)));
-        assertTrue(status2.getText().matches("@" + id1.screenName + " " + dateStr + "test https://t.co/.* @" + id2.screenName + " #twitter4jtest"));
+        assertTrue(status2.getText().contains("#twitter4jtest"));
         assertEquals(status.getId(), status2.getInReplyToStatusId());
         assertEquals(id1.id, status2.getInReplyToUserId());
         status = twitter1.destroyStatus(status.getId());
@@ -95,16 +86,35 @@ public class TweetsResourcesTest extends TwitterTestBase {
         assertEquals(status, TwitterObjectFactory.createStatus(TwitterObjectFactory.getRawJSON(status)));
 
         date = new java.util.Date().toString();
-        String tweet = date + "test http://t.co/VEDROet @" + id2.screenName + " #twitter4jtest";
+        String tweet = date + "test @" + id2.screenName + " #twitter4jtest";
         status = twitter1.updateStatus(new StatusUpdate(tweet).possiblySensitive(false).media(getRandomlyChosenFile()));
         assertNotNull(TwitterObjectFactory.getRawJSON(status));
         assertEquals(status, TwitterObjectFactory.createStatus(TwitterObjectFactory.getRawJSON(status)));
 
         assertTrue(status.getText().startsWith(date));
         assertEquals(1, status.getMediaEntities().length);
+
+        // testing un-retweet
+        String dateStr3 = new java.util.Date().toString();
+        String date3 = dateStr3 + "test http://t.co/VEDROet @" + id2.screenName + " #twitter4jtest";
+        Status status3 = twitter1.updateStatus(date3);
+        // since updateStatus is already tested, just checking if the returned status is non-null
+        assertNotNull(TwitterObjectFactory.getRawJSON(status3));
+
+        Status retweetedStatus = twitter2.retweetStatus(status3.getId());
+        assertTrue(retweetedStatus.getText().endsWith(status3.getText()));
+
+        // testing un retweet
+        Status unRetweetedStatus = twitter2.unRetweetStatus(status3.getId());
+        assertTrue(unRetweetedStatus.getText().endsWith(status3.getText()));
+
+        // deleting the status
+        status3 = twitter1.destroyStatus(status3.getId());
+        assertNotNull(TwitterObjectFactory.getRawJSON(status3));
     }
-    
-    public void testUploadMediaByFile() throws Exception {
+
+    @Test
+    void testUploadMediaByFile() throws Exception {
 
         UploadedMedia media = twitter1.uploadMedia(getRandomlyChosenFile());
 
@@ -112,7 +122,8 @@ public class TweetsResourcesTest extends TwitterTestBase {
         assertNotNull(media.getSize());
     }
 
-    public void testUploadMediaByStream() throws Exception {
+    @Test
+    void testUploadMediaByStream() throws Exception {
 
         File randomFile = getRandomlyChosenFile();
         FileInputStream fis = new FileInputStream(randomFile);
@@ -122,16 +133,17 @@ public class TweetsResourcesTest extends TwitterTestBase {
         assertNotNull(media2.getSize());
     }
 
-    public void testRetweetMethods() throws Exception {
+    @Test
+    void testRetweetMethods() throws Exception {
         List<Status> statuses;
 
-        statuses = twitter1.getRetweets(18594701629l);
+        statuses = twitter1.getRetweets(1021608606934822912L);
         assertNotNull(TwitterObjectFactory.getRawJSON(statuses));
         assertEquals(statuses.get(0), TwitterObjectFactory.createStatus(TwitterObjectFactory.getRawJSON(statuses.get(0))));
         assertIsRetweet(statuses);
-        assertTrue(20 < statuses.size());
+        assertTrue(2 < statuses.size());
 
-        IDs retweeters = twitter1.getRetweeterIds(18594701629l, -1);
+        IDs retweeters = twitter1.getRetweeterIds(1021608606934822912L, -1);
         assertTrue(0 < retweeters.getIDs().length);
     }
 
@@ -141,7 +153,8 @@ public class TweetsResourcesTest extends TwitterTestBase {
         }
     }
 
-    public void testOEmbed() throws TwitterException {
+    @Test
+    void testOEmbed() throws TwitterException {
         OEmbed oembed = twitter1.getOEmbed(new OEmbedRequest(240192632003911681L, "http://samuraism.com/"));
         assertNotNull(TwitterObjectFactory.getRawJSON(oembed));
         assertEquals(oembed, TwitterObjectFactory.createOEmbed(TwitterObjectFactory.getRawJSON(oembed)));
@@ -158,7 +171,27 @@ public class TweetsResourcesTest extends TwitterTestBase {
 
     }
 
-    public void testLookup() throws TwitterException {
+    @Test
+    void testOEmbedWithWidgetType() throws TwitterException {
+        OEmbedRequest req = new OEmbedRequest(1011622565469548550L, "");
+        req.setWidgetType(OEmbedRequest.WidgetType.VIDEO);
+        // use this if want to see impact:
+        // req.setHideTweet(true);
+
+        OEmbed oembed = twitter1.getOEmbed(req);
+
+        assertNotNull(TwitterObjectFactory.getRawJSON(oembed));
+        assertEquals(oembed, TwitterObjectFactory.createOEmbed(TwitterObjectFactory.getRawJSON(oembed)));
+
+        assertNotNull(oembed.getHtml());
+        assertTrue(oembed.getHtml().contains("<blockquote class=\"twitter-video\""));
+        // use this assert if include req.setHideTweet(true)
+        // assertTrue(oembed.getHtml().contains("<blockquote class=\"twitter-video\" data-status=\"hidden\""));
+
+    }
+
+    @Test
+    void testLookup() throws TwitterException {
         // from "Example Result" of https://dev.twitter.com/docs/api/1.1/get/statuses/lookup
         ResponseList<Status> statuses = twitter1.lookup(20L, 432656548536401920L);
 
@@ -170,7 +203,8 @@ public class TweetsResourcesTest extends TwitterTestBase {
         assertEquals("POST statuses/update. Great way to start. https://t.co/9S8YO69xzf (disclaimer, this was not posted via the API).", second.getText());
     }
 
-    public void testEntities() throws Exception {
+    @Test
+    void testEntities() throws Exception {
         Status status = twitter2.showStatus(332341548203261953L);
         SymbolEntity[] symbolEntities = status.getSymbolEntities();
         assertEquals(4, symbolEntities.length);
@@ -213,7 +247,7 @@ public class TweetsResourcesTest extends TwitterTestBase {
         assertEquals(1, medias.length);
         MediaEntity media = medias[0];
         assertEquals("pic.twitter.com/qbJx26r", media.getDisplayURL());
-        assertEquals("http://twitter.com/twitter/status/76360760606986241/photo/1", media.getExpandedURL());
+        assertEquals("https://twitter.com/twitter/status/76360760606986241/photo/1", media.getExpandedURL());
         assertEquals(76360760611180544L, media.getId());
         assertEquals("http://pbs.twimg.com/media/AQ9JtQsCEAA7dEN.jpg", media.getMediaURL());
         assertEquals("https://pbs.twimg.com/media/AQ9JtQsCEAA7dEN.jpg", media.getMediaURLHttps());
@@ -230,13 +264,13 @@ public class TweetsResourcesTest extends TwitterTestBase {
 
         MediaEntity.Size medium = sizes.get(MediaEntity.Size.MEDIUM);
         assertEquals(MediaEntity.Size.FIT, medium.getResize());
-        assertEquals(600, medium.getWidth());
-        assertEquals(399, medium.getHeight());
+        assertEquals(700, medium.getWidth());
+        assertEquals(466, medium.getHeight());
 
         MediaEntity.Size small = sizes.get(MediaEntity.Size.SMALL);
         assertEquals(MediaEntity.Size.FIT, small.getResize());
-        assertEquals(340, small.getWidth());
-        assertEquals(226, small.getHeight());
+        assertEquals(680, small.getWidth());
+        assertEquals(453, small.getHeight());
 
         MediaEntity.Size thumb = sizes.get(MediaEntity.Size.THUMB);
 

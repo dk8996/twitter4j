@@ -29,13 +29,13 @@ public interface TwitterStream extends OAuthSupport, TwitterBase {
      * @param listener listener to be added
      * @since Twitter4J 2.1.7
      */
-    void addConnectionLifeCycleListener(ConnectionLifeCycleListener listener);
+    TwitterStream addConnectionLifeCycleListener(ConnectionLifeCycleListener listener);
 
     /**
      * @param listener listener to add
      * @since Twitter4J 2.1.8
      */
-    void addListener(StreamListener listener);
+    TwitterStream addListener(StreamListener listener);
 
     /**
      * @param action action when receiving Status
@@ -55,14 +55,14 @@ public interface TwitterStream extends OAuthSupport, TwitterBase {
      * @param listener listener to remove
      * @since Twitter4J 4.0.0
      */
-    void removeListener(StreamListener listener);
+    TwitterStream removeListener(StreamListener listener);
 
     /**
      * clear status listeners
      *
      * @since Twitter4J 4.0.0
      */
-    void clearListeners();
+    TwitterStream clearListeners();
 
     /**
      * replace existing listener
@@ -71,7 +71,7 @@ public interface TwitterStream extends OAuthSupport, TwitterBase {
      * @param toBeAdded   listener to be added
      * @since Twitter4J 4.0.0
      */
-    void replaceListener(StreamListener toBeRemoved, StreamListener toBeAdded);
+    TwitterStream replaceListener(StreamListener toBeRemoved, StreamListener toBeAdded);
 
     /**
      * Starts listening on all public statuses. Available only to approved parties and requires a signed agreement to access. Please do not contact us about access to the firehose. If your service warrants access to it, we'll contact you.
@@ -81,7 +81,7 @@ public interface TwitterStream extends OAuthSupport, TwitterBase {
      * @see <a href="https://dev.twitter.com/docs/streaming-api/methods">Streaming API Methods statuses/firehose</a>
      * @since Twitter4J 2.0.4
      */
-    void firehose(final int count);
+    TwitterStream firehose(final int count);
 
     /**
      * Starts listening on all public statuses containing links. Available only to approved parties and requires a signed agreement to access. Please do not contact us about access to the links stream. If your service warrants access to it, we'll contact you.
@@ -91,7 +91,7 @@ public interface TwitterStream extends OAuthSupport, TwitterBase {
      * @see <a href="https://dev.twitter.com/docs/streaming-api/methods">Streaming API Methods statuses/links</a>
      * @since Twitter4J 2.1.1
      */
-    void links(final int count);
+    TwitterStream links(final int count);
 
     /**
      * Starts listening on all retweets. The retweet stream is not a generally available resource. Few applications require this level of access. Creative use of a combination of other resources and various access levels can satisfy nearly every application use case. As of 9/11/2009, the site-wide retweet feature has not yet launched, so there are currently few, if any, retweets on this stream.
@@ -100,7 +100,7 @@ public interface TwitterStream extends OAuthSupport, TwitterBase {
      * @see <a href="https://dev.twitter.com/docs/streaming-api/methods">Streaming API Methods statuses/retweet</a>
      * @since Twitter4J 2.0.10
      */
-    void retweet();
+    TwitterStream retweet();
 
     /**
      * Starts listening on random sample of all public statuses. The default access level provides a small proportion of the Firehose. The "Gardenhose" access level provides a proportion more suitable for data mining and research applications that desire a larger proportion to be statistically significant sample.
@@ -109,7 +109,7 @@ public interface TwitterStream extends OAuthSupport, TwitterBase {
      * @see <a href="https://dev.twitter.com/docs/streaming-api/methods">Streaming API: Methods statuses/sample</a>
      * @since Twitter4J 2.0.10
      */
-    void sample();
+    TwitterStream sample();
 
     /**
      * Starts listening on random sample of all public statuses. The default access level provides a small proportion of the Firehose. The "Gardenhose" access level provides a proportion more suitable for data mining and research applications that desire a larger proportion to be statistically significant sample.
@@ -121,40 +121,7 @@ public interface TwitterStream extends OAuthSupport, TwitterBase {
      * @see <a href="https://dev.twitter.com/docs/streaming-api/methods">Streaming API: Methods statuses/sample</a>
      * @since Twitter4J 2.0.10
      */
-    void sample(final String language);
-
-    /**
-     * User Streams provides real-time updates of all data needed to update a desktop application display. Applications can request startup back-fill from the REST API and then transition to Streaming for nearly all subsequent reads. Rate limits and latency are practically eliminated. Desktop developers can stop managing rate limits and use this new data to create an entirely new user experience. On our end, we hope to reduce costs and increase site reliability.
-     *
-     * @throws IllegalStateException when non-UserStreamListener is set, or no listener is set
-     * @see <a href="https://dev.twitter.com/docs/streaming-api/user-streams">User Streams</a>
-     */
-    void user();
-
-    /**
-     * User Streams provides real-time updates of all data needed to update a desktop application display. Applications can request startup back-fill from the REST API and then transition to Streaming for nearly all subsequent reads. Rate limits and latency are practically eliminated. Desktop developers can stop managing rate limits and use this new data to create an entirely new user experience. On our end, we hope to reduce costs and increase site reliability.
-     *
-     * @param track keywords to track
-     * @throws IllegalStateException when non-UserStreamListener is set, or no listener is set
-     * @see <a href="https://dev.twitter.com/docs/streaming-api/user-streams">User Streams</a>
-     * @since Twitter4J 2.1.9
-     */
-    void user(final String... track);
-
-
-    /**
-     * Site Streams, a new feature on the Streaming API, is now available for beta testing. Site Streams allows services, such as web sites or mobile push services, to receive real-time updates for a large number of users without any of the hassles of managing REST API rate limits. The initial version delivers events created by, or directed to, users that have shared their OAuth token with your application. The following events are streamed immediately, and without rate limits: Home Timelines, Mentions Timelines, User Timelines, Direct Messages, Mentions, Follows, Favorites, Tweets, Retweets, Profile changes, and List changes.
-     * The following limitations must be respected during the beta period. These limitations may be changed with little advance notice. We intend to increase or remove these various limitations as we move from beta test into full production:<br>
-     * Limit the follow count to 100 users per stream. Clients must occasionally compact users onto a smaller number of connections to minimize the total number of connections outstanding.<br>
-     * Open no more than 25 new connections per second and exponentially back-off on errors.
-     *
-     * @param withFollowings whether to receive status updates from people following
-     * @param follow         an array of users to include in the stream
-     * @return controller to control the site stream
-     * @see <a href="https://dev.twitter.com/docs/streaming-api/site-streams">Site Streams | Twitter Developers</a>
-     * @since Twitter4J 2.1.8
-     */
-    StreamController site(final boolean withFollowings, final long... follow);
+    TwitterStream sample(final String language);
 
     /**
      * Start consuming public statuses that match one or more filter predicates. At least one predicate parameter, follow, locations, or track must be specified. Multiple parameters may be specified which allows most clients to use a single connection to the Streaming API. Placing long parameters in the URL may cause the request to be rejected for excessive URL length.<br>
@@ -165,7 +132,7 @@ public interface TwitterStream extends OAuthSupport, TwitterBase {
      * @see <a href="https://dev.twitter.com/docs/streaming-api/methods">Streaming API Methods statuses/filter</a>
      * @since Twitter4J 2.1.2
      */
-    void filter(final FilterQuery query);
+    TwitterStream filter(final FilterQuery query);
 
     /**
      * Start consuming public statuses that match the filter predicate. Placing long parameters in the URL may cause the request to be rejected for excessive URL length.<br>
@@ -174,19 +141,19 @@ public interface TwitterStream extends OAuthSupport, TwitterBase {
      * @param track words to be filtered
      * @since Twitter4J 4.0.4
      */
-    void filter(final String... track);
+    TwitterStream filter(final String... track);
 
     /**
      * shutdown internal stream consuming thread
      *
      * @since Twitter4J 2.1.7
      */
-    void cleanUp();
+    TwitterStream cleanUp();
 
     /**
      * Shuts down internal dispatcher thread shared by all TwitterStream instances.<br>
      *
      * @since Twitter4J 2.1.9
      */
-    void shutdown();
+    TwitterStream shutdown();
 }

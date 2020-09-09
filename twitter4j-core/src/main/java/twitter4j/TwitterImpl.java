@@ -325,6 +325,7 @@ class TwitterImpl extends TwitterBaseImpl implements Twitter {
 				conf.getUploadBaseURL() + "media/upload.json",
 				new HttpParameter[] { new HttpParameter("command", CHUNKED_INIT),
 						new HttpParameter("media_type", "video/mp4"), 
+						new HttpParameter("shared", true), 
 						new HttpParameter("media_category", "tweet_video"),
 						new HttpParameter("total_bytes", size) })
 				.asJSONObject());
